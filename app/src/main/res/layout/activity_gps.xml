@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/theme_background">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
+        <fragment
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSendLocation"
+            style="@style/Widget.MaterialComponents.Button.Icon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:backgroundTint="@color/theme_sos"
+            app:cornerRadius="24dp"
+            app:icon="@drawable/baseline_send_24"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="15dp"
+            app:iconTint="@color/theme_on_surface" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBackGps"
+            style="@style/Widget.MaterialComponents.Button.Icon"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_margin="8dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:backgroundTint="@color/theme_surface"
+            app:cornerRadius="20dp"
+            app:icon="@drawable/outline_arrow_back_2_24"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="15dp"
+            app:iconTint="@color/theme_on_surface" />
+
+    </FrameLayout>
+</androidx.wear.widget.BoxInsetLayout>
