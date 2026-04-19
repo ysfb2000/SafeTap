@@ -1,51 +1,41 @@
 package com.example.safetap.activity;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.wear.widget.WearableLinearLayoutManager;
 import androidx.wear.widget.WearableRecyclerView;
 
 import com.example.safetap.R;
-import com.example.safetap.adapter.ContactsAdapter;
-import com.example.safetap.models.Contact;
+import com.example.shared.adapter.ContactsAdapter;
+import com.example.shared.models.Contact;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
-public class ContactsActivity extends AppCompatActivity {
+public class ContactsActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
 
+    private static final String TAG = "WatchContactsActivity";
     private static final String PREFS_NAME = "SafeTapPrefs";
     private static final String CONTACTS_KEY = "contacts_list";
+    private static final String GET_CONTACTS_PATH = "/get_contacts";
+    private static final String CONTACTS_DATA_PATH = "/contacts_data";
 
     private WearableRecyclerView recyclerView;
     private ContactsAdapter adapter;
     private List<Contact> contactList;
-
-    private final ActivityResultLauncher<Intent> addContactLauncher = registerForActivityResult(
-            new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    String name = result.getData().getStringExtra("name");
-                    String phone = result.getData().getStringExtra("phone");
-                    if (name != null && phone != null) {
-                        Contact newContact = new Contact(name, phone);
-                        contactList.add(newContact);
-                        adapter.notifyItemInserted(contactList.size() - 1);
-                        saveContacts();
-                    }
-                }
-            }
-    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,50 +44,43 @@ public class ContactsActivity extends AppCompatActivity {
 
         recyclerView = findViewById(R.id.contactsRecyclerView);
         
-        loadContacts();
-        
-        if (contactList.isEmpty()) {
-            contactList.add(new Contact("Emergency 1", "123456789"));
-            saveContacts();
-        }
+        loadContactsFromPrefs();
         
         adapter = new ContactsAdapter(contactList);
-        adapter.setOnContactLongClickListener(position -> showDeleteConfirmationDialog(position));
-
         recyclerView.setHasFixedSize(true);
         recyclerView.setEdgeItemsCenteringEnabled(true);
         recyclerView.setLayoutManager(new WearableLinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        findViewById(R.id.btnAdd).setOnClickListener(v -> {
-            Intent intent = new Intent(this, AddContactActivity.class);
-            addContactLauncher.launch(intent);
-        });
+        requestContactsFromPhone();
     }
 
-    private void showDeleteConfirmationDialog(int position) {
-        new AlertDialog.Builder(this)
-                .setTitle("Delete Contact")
-                .setMessage("Are you sure you want to delete this contact?")
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    contactList.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    saveContacts();
-                })
-                .setNegativeButton("Cancel", null)
-                .show();
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Wearable.getMessageClient(this).addListener(this);
     }
 
-    private void saveContacts() {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(contactList);
-        editor.putString(CONTACTS_KEY, json);
-        editor.apply();
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Wearable.getMessageClient(this).removeListener(this);
     }
 
-    private void loadContacts() {
+    private void requestContactsFromPhone() {
+        new Thread(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                for (Node node : nodes) {
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), GET_CONTACTS_PATH, new byte[0]);
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                Log.e(TAG, "Error requesting contacts", e);
+            }
+        }).start();
+    }
+
+    private void loadContactsFromPrefs() {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = sharedPreferences.getString(CONTACTS_KEY, null);
@@ -106,6 +89,30 @@ public class ContactsActivity extends AppCompatActivity {
 
         if (contactList == null) {
             contactList = new ArrayList<>();
+        }
+    }
+
+    private void saveContactsToPrefs(String json) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(CONTACTS_KEY, json);
+        editor.apply();
+    }
+
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+        if (CONTACTS_DATA_PATH.equals(messageEvent.getPath())) {
+            String json = new String(messageEvent.getData());
+            saveContactsToPrefs(json);
+            
+            Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
+            List<Contact> newContacts = new Gson().fromJson(json, type);
+            
+            runOnUiThread(() -> {
+                contactList.clear();
+                contactList.addAll(newContacts);
+                adapter.notifyDataSetChanged();
+            });
         }
     }
 }

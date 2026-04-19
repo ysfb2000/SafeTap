@@ -2,12 +2,11 @@ package com.example.safetap.activity;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -15,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.safetap.R;
-import com.example.safetap.models.Contact;
+import com.example.shared.models.Contact;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -25,20 +24,21 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
+    private static final String TAG = "GpsActivity";
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
     private static final String PREFS_NAME = "SafeTapPrefs";
     private static final String CONTACTS_KEY = "contacts_list";
+    private static final String SEND_LOCATION_SMS_PATH = "/send_location_sms";
     private Location lastLocation;
 
     @Override
@@ -55,7 +55,7 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
         }
 
         findViewById(R.id.btnBackGps).setOnClickListener(v -> finish());
-        findViewById(R.id.btnSendLocation).setOnClickListener(v -> sendLocationToContacts());
+        findViewById(R.id.btnSendLocation).setOnClickListener(v -> sendLocationViaPhone());
     }
 
     @Override
@@ -98,50 +98,30 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
                 });
     }
 
-    private void sendLocationToContacts() {
+    private void sendLocationViaPhone() {
         if (lastLocation != null) {
-            List<Contact> contactList = loadContacts();
-            if (contactList.isEmpty()) {
-                Toast.makeText(this, "No emergency contacts found", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            StringBuilder phoneNumbers = new StringBuilder();
-            for (int i = 0; i < contactList.size(); i++) {
-                phoneNumbers.append(contactList.get(i).getPhone());
-                if (i < contactList.size() - 1) {
-                    phoneNumbers.append(";");
-                }
-            }
-
             String message = "My current location: https://www.google.com/maps/search/?api=1&query=" + 
                     lastLocation.getLatitude() + "," + lastLocation.getLongitude();
 
-            Intent intent = new Intent(Intent.ACTION_SENDTO);
-            intent.setData(Uri.parse("smsto:" + phoneNumbers.toString()));
-            intent.putExtra("sms_body", message);
-            
-            try {
-                startActivity(intent);
-            } catch (Exception e) {
-                Toast.makeText(this, "Could not open SMS app", Toast.LENGTH_SHORT).show();
-            }
+            new Thread(() -> {
+                try {
+                    List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                    if (nodes.isEmpty()) {
+                        runOnUiThread(() -> Toast.makeText(this, "No phone connected", Toast.LENGTH_SHORT).show());
+                        return;
+                    }
+                    for (Node node : nodes) {
+                        Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_LOCATION_SMS_PATH, message.getBytes());
+                    }
+                    runOnUiThread(() -> Toast.makeText(this, "Location sent to phone", Toast.LENGTH_SHORT).show());
+                } catch (Exception e) {
+                    Log.e(TAG, "Error sending location to phone", e);
+                    runOnUiThread(() -> Toast.makeText(this, "Error sending location", Toast.LENGTH_SHORT).show());
+                }
+            }).start();
         } else {
             Toast.makeText(this, "Location not available", Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private List<Contact> loadContacts() {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString(CONTACTS_KEY, null);
-        Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
-        List<Contact> contactList = gson.fromJson(json, type);
-
-        if (contactList == null) {
-            contactList = new ArrayList<>();
-        }
-        return contactList;
     }
 
     @Override

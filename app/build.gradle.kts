@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":shared"))
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -43,4 +44,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.google.android.gms:play-services-wearable:18.0.0")
 }

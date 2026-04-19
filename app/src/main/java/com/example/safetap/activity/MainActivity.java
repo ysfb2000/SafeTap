@@ -5,12 +5,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.activity.ComponentActivity;
 
 import com.example.safetap.R;
-import com.example.safetap.models.Contact;
+import com.example.shared.models.Contact;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.MessageClient;
+import com.google.android.gms.wearable.MessageEvent;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -18,8 +24,13 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends ComponentActivity implements MessageClient.OnMessageReceivedListener {
 
+    private static final String TAG = "MainActivity";
+    private static final String PATH = "/hello";
+    private static final String GET_CONTACTS_PATH = "/get_contacts";
+    private static final String CONTACTS_DATA_PATH = "/contacts_data";
+    private static final String SEND_SOS_PATH = "/send_sos";
     private static final String PREFS_NAME = "SafeTapPrefs";
     private static final String CONTACTS_KEY = "contacts_list";
 
@@ -43,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btnSos).setOnLongClickListener(v -> {
-            sendSosSmsToAllContacts();
+            sendSosViaPhone();
             return true;
         });
         
@@ -51,33 +62,45 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, HeartRateActivity.class);
             startActivity(intent);
         });
+
+        requestContactsFromPhone();
     }
 
-    private void sendSosSmsToAllContacts() {
-        List<Contact> contactList = loadContacts();
-        if (contactList.isEmpty()) {
-            Toast.makeText(this, "No emergency contacts found", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        StringBuilder phoneNumbers = new StringBuilder();
-        for (int i = 0; i < contactList.size(); i++) {
-            phoneNumbers.append(contactList.get(i).getPhone());
-            if (i < contactList.size() - 1) {
-                phoneNumbers.append(";");
+    private void requestContactsFromPhone() {
+        new Thread(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                for (Node node : nodes) {
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), GET_CONTACTS_PATH, new byte[0]);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error requesting contacts from phone", e);
             }
-        }
+        }).start();
+    }
 
-        String message = "Emergency! I need help! This is an SOS message from SafeTap.";
-        Intent intent = new Intent(Intent.ACTION_SENDTO);
-        intent.setData(Uri.parse("smsto:" + phoneNumbers.toString()));
-        intent.putExtra("sms_body", message);
-        
-        try {
-            startActivity(intent);
-        } catch (Exception e) {
-            Toast.makeText(this, "Could not open SMS app", Toast.LENGTH_SHORT).show();
-        }
+    private void sendSosViaPhone() {
+        new Thread(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                if (nodes.isEmpty()) {
+                    runOnUiThread(() -> Toast.makeText(this, "No phone connected", Toast.LENGTH_SHORT).show());
+                    return;
+                }
+                for (Node node : nodes) {
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_SOS_PATH, new byte[0]);
+                }
+                runOnUiThread(() -> Toast.makeText(this, "SOS request sent to phone", Toast.LENGTH_SHORT).show());
+            } catch (Exception e) {
+                Log.e(TAG, "Error sending SOS request to phone", e);
+                runOnUiThread(() -> Toast.makeText(this, "Error sending SOS request", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+
+    private void saveContacts(String json) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.edit().putString(CONTACTS_KEY, json).apply();
     }
 
     private List<Contact> loadContacts() {
@@ -91,5 +114,32 @@ public class MainActivity extends AppCompatActivity {
             contactList = new ArrayList<>();
         }
         return contactList;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Wearable.getMessageClient(this).addListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Wearable.getMessageClient(this).removeListener(this);
+    }
+
+    @Override
+    public void onMessageReceived(MessageEvent messageEvent) {
+        if (PATH.equals(messageEvent.getPath())) {
+            String message = new String(messageEvent.getData());
+
+            runOnUiThread(() ->
+                    // show the message
+                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    );
+        } else if (CONTACTS_DATA_PATH.equals(messageEvent.getPath())) {
+            String json = new String(messageEvent.getData());
+            saveContacts(json);
+        }
     }
 }

@@ -11,6 +11,7 @@ wear = "1.4.0"
 playServicesMaps = "20.0.0"
 playServicesLocation = "21.3.0"
 gson = "2.10.1"
+playServicesWearable = "19.0.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -24,6 +25,8 @@ wear = { group = "androidx.wear", name = "wear", version.ref = "wear" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
+play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
