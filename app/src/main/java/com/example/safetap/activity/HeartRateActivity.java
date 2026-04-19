@@ -9,7 +9,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
 import android.widget.ImageView;
@@ -22,7 +22,10 @@ import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
 import com.example.safetap.R;
-import com.example.safetap.models.Contact;
+import com.example.shared.models.Contact;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -32,6 +35,7 @@ import java.util.List;
 
 public class HeartRateActivity extends AppCompatActivity implements SensorEventListener {
 
+    private static final String TAG = "HeartRateActivity";
     private TextView tvHeartRate;
     private ImageView ivHeartIcon;
     private SwitchCompat switchSms;
@@ -41,6 +45,8 @@ public class HeartRateActivity extends AppCompatActivity implements SensorEventL
     private static final int PERMISSION_REQUEST_CODE = 100;
     private static final String PREFS_NAME = "SafeTapPrefs";
     private static final String CONTACTS_KEY = "contacts_list";
+    private static final String HEART_RATE_DATA_PATH = "/heart_rate_data";
+    private static final String HEART_RATE_ALARM_ENABLED_PATH = "/heart_rate_alarm_enabled";
     
     private List<Contact> contactList;
     private boolean isSmsEnabled = false;
@@ -69,6 +75,7 @@ public class HeartRateActivity extends AppCompatActivity implements SensorEventL
             if (isChecked) {
                 checkPermissions();
             }
+            sendHeartRateAlarmStatusToPhone(isChecked);
         });
 
         loadContacts();
@@ -104,10 +111,39 @@ public class HeartRateActivity extends AppCompatActivity implements SensorEventL
         if (event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
             float heartRate = event.values[0];
             if (heartRate > 0) {
-                tvHeartRate.setText(String.valueOf((int) heartRate));
+                String hrValue = String.valueOf((int) heartRate);
+                tvHeartRate.setText(hrValue);
                 animateHeart();
+                sendHeartRateToPhone(hrValue);
             }
         }
+    }
+
+    private void sendHeartRateToPhone(String heartRate) {
+        new Thread(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                for (Node node : nodes) {
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), HEART_RATE_DATA_PATH, heartRate.getBytes());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error sending heart rate to phone", e);
+            }
+        }).start();
+    }
+
+    private void sendHeartRateAlarmStatusToPhone(boolean enabled) {
+        new Thread(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                String status = enabled ? "true" : "false";
+                for (Node node : nodes) {
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), HEART_RATE_ALARM_ENABLED_PATH, status.getBytes());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error sending heart rate alarm status to phone", e);
+            }
+        }).start();
     }
 
     private void animateHeart() {

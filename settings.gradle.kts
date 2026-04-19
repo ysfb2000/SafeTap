@@ -24,4 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "SafeTap"
 include(":app")
-include(":tapsafeonphone")
+include(":phone")
+include(":shared")
