@@ -1,12 +1,14 @@
 package com.example.safetap.activity;
 
 import static com.example.shared.constants.MessageChannels.SEND_LOCATION_SMS_PATH;
+import static com.example.shared.constants.Permission.LOCATION_PERMISSION_REQUEST_CODE;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.safetap.R;
+import com.example.safetap.databinding.ActivityGpsBinding;
 import com.example.shared.constants.Tag;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -30,37 +33,54 @@ import com.google.android.gms.wearable.Wearable;
 
 import java.util.List;
 
-public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback, View.OnClickListener {
 
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
     private Location lastLocation;
+
+    ActivityGpsBinding gpsBinding;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gps);
 
+        // Create a binding object
+        gpsBinding = ActivityGpsBinding.inflate(getLayoutInflater());
+        setContentView(gpsBinding.getRoot());
+
+        // Initialize the FusedLocationProviderClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
 
-        findViewById(R.id.btnBackGps).setOnClickListener(v -> finish());
-        findViewById(R.id.btnSendLocation).setOnClickListener(v -> sendLocationViaPhone());
+
+        initListener();
     }
 
+    // Initialize the listener
+    private void initListener() {
+        gpsBinding.btnBackGps.setOnClickListener(this);
+        gpsBinding.btnSendLocation.setOnClickListener(this);
+    }
+
+    // When the map is ready, update the location on the map
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         mMap = googleMap;
         updateLocation();
     }
 
+    // Update the location on the map
     private void updateLocation() {
+        // Check for location permission
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{
@@ -94,6 +114,7 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
                 });
     }
 
+    // Send the location to the phone
     private void sendLocationViaPhone() {
         if (lastLocation != null) {
             String message = "My current location: https://www.google.com/maps/search/?api=1&query=" + 
@@ -101,14 +122,18 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
 
             new Thread(() -> {
                 try {
+                    // Get a list of connected nodes
                     List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
                     if (nodes.isEmpty()) {
                         runOnUiThread(() -> Toast.makeText(this, "No phone connected", Toast.LENGTH_SHORT).show());
                         return;
                     }
+
+                    // iterate through the nodes and send a message to each one
                     for (Node node : nodes) {
                         Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_LOCATION_SMS_PATH, message.getBytes());
                     }
+
                     runOnUiThread(() -> Toast.makeText(this, "Location sent to phone", Toast.LENGTH_SHORT).show());
                 } catch (Exception e) {
                     Log.e(Tag.GpsActivity, "Error sending location to phone", e);
@@ -120,6 +145,7 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
         }
     }
 
+    // Handle permission result
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -129,6 +155,19 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
             } else {
                 Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    // Handle click events
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.btnBackGps) {
+            finish();
+        }
+
+        if (id == R.id.btnSendLocation) {
+            sendLocationViaPhone();
         }
     }
 }

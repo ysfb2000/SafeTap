@@ -2,4 +2,36 @@
 <resources>
     <dimen name="_0dp">0dp</dimen>
     <dimen name="divider_height">1dp</dimen>
+
+    <!-- activity_main -->
+    <dimen name="sos_button_width">140dp</dimen>
+    <dimen name="sos_button_height">70dp</dimen>
+    <dimen name="sos_button_margin_bottom">32dp</dimen>
+    <dimen name="sos_button_text_size">24sp</dimen>
+    <dimen name="sos_button_corner_radius">36dp</dimen>
+
+    <dimen name="nav_button_size">40dp</dimen>
+    <dimen name="nav_button_margin">8dp</dimen>
+    <dimen name="nav_button_padding_bottom">12dp</dimen>
+    <dimen name="nav_button_corner_radius">24dp</dimen>
+
+    <!-- activity_heart_rate -->
+    <dimen name="heart_icon_width">39dp</dimen>
+    <dimen name="heart_icon_height">37dp</dimen>
+    <dimen name="heart_rate_text_size">32sp</dimen>
+    <dimen name="bpm_text_size">12sp</dimen>
+    <dimen name="switch_margin_top">4dp</dimen>
+
+    <!-- activity_gps -->
+    <dimen name="gps_button_size">35dp</dimen>
+    <dimen name="gps_send_margin_bottom">16dp</dimen>
+    <dimen name="gps_back_margin">8dp</dimen>
+    <dimen name="gps_button_corner_radius">24dp</dimen>
+    <dimen name="gps_back_button_corner_radius">20dp</dimen>
+    <dimen name="gps_icon_size">15dp</dimen>
+
+    <!-- item_contact -->
+    <dimen name="item_contact_padding">3dp</dimen>
+    <dimen name="item_contact_margin_start">5dp</dimen>
+    <dimen name="item_contact_text_size">11sp</dimen>
 </resources>

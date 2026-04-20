@@ -10,13 +10,13 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="0dp"
+        android:padding="@dimen/_0dp"
         app:layout_boxedEdges="all">
 
         <ImageView
             android:id="@+id/ivHeartIcon"
-            android:layout_width="39dp"
-            android:layout_height="37dp"
+            android:layout_width="@dimen/heart_icon_width"
+            android:layout_height="@dimen/heart_icon_height"
             android:src="@drawable/baseline_favorite_24"
             app:tint="@color/theme_sos" />
 
@@ -24,17 +24,17 @@
             android:id="@+id/tvHeartRate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="--"
+            android:text="@string/na"
             android:textColor="@color/green"
-            android:textSize="32sp"
+            android:textSize="@dimen/heart_rate_text_size"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="BPM"
+            android:text="@string/bpm"
             android:textColor="@color/theme_icon_tint"
-            android:textSize="12sp" />
+            android:textSize="@dimen/bpm_text_size" />
 
 
 

@@ -6,12 +6,12 @@ import static com.example.shared.constants.Common.PREFS_NAME;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.phone.databinding.ActivityAddContactBinding;
 import com.example.shared.models.Contact;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -19,38 +19,43 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class AddContactActivity extends AppCompatActivity {
+public class AddContactActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private EditText etName;
-    private EditText etCountryCode;
-    private EditText etPhone;
+    private ActivityAddContactBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_contact);
 
-        etName = findViewById(R.id.etName);
-        etCountryCode = findViewById(R.id.etCountryCode);
-        etPhone = findViewById(R.id.etPhone);
-        Button btnSave = findViewById(R.id.btnSave);
-        Button btnCancel = findViewById(R.id.btnCancel);
+        // Create a binding object
+        binding = ActivityAddContactBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        btnSave.setOnClickListener(v -> saveContact());
-        btnCancel.setOnClickListener(v -> finish());
+        binding.btnSave.setOnClickListener(v -> saveContact());
+        binding.btnCancel.setOnClickListener(v -> finish());
     }
 
-    private void saveContact() {
-        String name = etName.getText().toString().trim();
-        String countryCode = etCountryCode.getText().toString().trim();
-        String phoneNumber = etPhone.getText().toString().trim();
+    // Initialize the listener
+    private void initListener() {
+        binding.btnSave.setOnClickListener(this);
+        binding.btnCancel.setOnClickListener(this);
+    }
 
+    // Save a contact
+    private void saveContact() {
+        String name = Objects.requireNonNull(binding.etName.getText()).toString().trim();
+        String countryCode = Objects.requireNonNull(binding.etCountryCode.getText()).toString().trim();
+        String phoneNumber = Objects.requireNonNull(binding.etPhone.getText()).toString().trim();
+
+        // Check if any field is empty
         if (name.isEmpty() || countryCode.isEmpty() || phoneNumber.isEmpty()) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Save the contact
         List<Contact> contactList = loadContacts();
         contactList.add(new Contact(name, countryCode, phoneNumber));
         saveContacts(contactList);
@@ -59,6 +64,7 @@ public class AddContactActivity extends AppCompatActivity {
         finish();
     }
 
+    // Load contacts from shared preferences
     private List<Contact> loadContacts() {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
@@ -72,6 +78,7 @@ public class AddContactActivity extends AppCompatActivity {
         return contactList;
     }
 
+    // Save contacts to shared preferences
     private void saveContacts(List<Contact> contactList) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -79,5 +86,21 @@ public class AddContactActivity extends AppCompatActivity {
         String json = gson.toJson(contactList);
         editor.putString(CONTACTS_KEY, json);
         editor.apply();
+    }
+
+    // Handle button clicks
+    @Override
+    public void onClick(View view) {
+
+        int id = view.getId();
+        if (id == R.id.btnSave) {
+            saveContact();
+        }
+
+        if (id == R.id.btnCancel) {
+            finish();
+        }
+
+
     }
 }

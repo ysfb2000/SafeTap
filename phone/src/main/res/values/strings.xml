@@ -1,3 +1,19 @@
 <resources>
     <string name="app_name">SafeTap Contacts</string>
+    <string name="hello_watch">Hello Watch</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="contact_name">Contact Name</string>
+    <string name="code">Code</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="please_fill_all_fields">Please fill in all fields</string>
+    <string name="contact_saved">Contact saved</string>
+    <string name="delete_contact">Delete Contact</string>
+    <string name="delete_confirmation">Are you sure you want to delete %1$s?</string>
+    <string name="delete">Delete</string>
+    <string name="sms_permission_granted">SMS Permission Granted</string>
+    <string name="sms_permission_denied">SMS Permission Denied. SOS will not work.</string>
+    <string name="no_contacts_found">No contacts found to send message</string>
+    <string name="message_sent_to_all">Message sent to all contacts</string>
 </resources>

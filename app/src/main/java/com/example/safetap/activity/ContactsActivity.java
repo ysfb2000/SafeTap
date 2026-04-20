@@ -10,6 +10,7 @@ import androidx.wear.widget.WearableLinearLayoutManager;
 import androidx.wear.widget.WearableRecyclerView;
 
 import com.example.safetap.R;
+import com.example.safetap.databinding.ActivityContactsBinding;
 import com.example.shared.adapter.ContactsAdapter;
 import com.example.shared.constants.Common;
 import com.example.shared.constants.MessageChannels;
@@ -34,36 +35,49 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
     private ContactsAdapter adapter;
     private List<Contact> contactList;
 
+    ActivityContactsBinding contactsBinding;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contacts);
 
-        recyclerView = findViewById(R.id.contactsRecyclerView);
-        
+        // Create a binding object
+        contactsBinding = ActivityContactsBinding.inflate(getLayoutInflater());
+        setContentView(contactsBinding.getRoot());
+
+        // Load contacts from phone
+        requestContactsFromPhone();
+
+        // Load contacts from shared preferences
         loadContactsFromPrefs();
-        
+
+        // Initialize the RecyclerView
+        recyclerView = contactsBinding.contactsRecyclerView;
+
+        // Set up the RecyclerView
         adapter = new ContactsAdapter(contactList);
         recyclerView.setHasFixedSize(true);
         recyclerView.setEdgeItemsCenteringEnabled(true);
         recyclerView.setLayoutManager(new WearableLinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-
-        requestContactsFromPhone();
     }
 
+    // Handle lifecycle onResume events
     @Override
     protected void onResume() {
         super.onResume();
         Wearable.getMessageClient(this).addListener(this);
     }
 
+    // Handle lifecycle onPause events
     @Override
     protected void onPause() {
         super.onPause();
         Wearable.getMessageClient(this).removeListener(this);
     }
 
+    // Request contacts from the phone
     private void requestContactsFromPhone() {
         new Thread(() -> {
             try {
@@ -77,6 +91,7 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
         }).start();
     }
 
+    // Load contacts from shared preferences
     private void loadContactsFromPrefs() {
         SharedPreferences sharedPreferences = getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
@@ -89,6 +104,7 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
         }
     }
 
+    // Save contacts to shared preferences
     private void saveContactsToPrefs(String json) {
         SharedPreferences sharedPreferences = getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -96,15 +112,20 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
         editor.apply();
     }
 
+    // Handle message events
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if (MessageChannels.CONTACTS_DATA_PATH.equals(messageEvent.getPath())) {
             String json = new String(messageEvent.getData());
             saveContactsToPrefs(json);
-            
+
+            // Create a TypeToken for the list of Contact objects
             Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
+
+            // Convert the JSON string to a list of Contact objects
             List<Contact> newContacts = new Gson().fromJson(json, type);
-            
+
+            // Update the contact list and notify the adapter
             runOnUiThread(() -> {
                 contactList.clear();
                 contactList.addAll(newContacts);

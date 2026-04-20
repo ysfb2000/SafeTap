@@ -37,8 +37,11 @@ public class DataLayerListenerService extends WearableListenerService {
         // Toast.makeText(this, "Service created!", Toast.LENGTH_SHORT).show();
     }
 
+    // Handle lifecycle onResume events
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+
+        // Handle message events
         if (GET_CONTACTS_PATH.equals(messageEvent.getPath())) {
             sendContactsToWatch();
         } else if (SEND_SOS_PATH.equals(messageEvent.getPath())) {
@@ -48,6 +51,7 @@ public class DataLayerListenerService extends WearableListenerService {
         }
     }
 
+    // Send location to all contacts
     private void sendLocationToAllContacts(String message) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = sharedPreferences.getString(CONTACTS_KEY, "[]");
@@ -62,6 +66,7 @@ public class DataLayerListenerService extends WearableListenerService {
             return;
         }
 
+        // Send location to all contacts
         SmsManager smsManager = SmsManager.getDefault();
         for (Contact contact : contactList) {
             try {
@@ -72,28 +77,37 @@ public class DataLayerListenerService extends WearableListenerService {
             }
         }
 
+        // Show a toast message
         Toast.makeText(this, "Location Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
         Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
     }
 
+    // Send contacts to the watch
     private void sendContactsToWatch() {
+        // Retrieve contacts from shared preferences
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = sharedPreferences.getString(CONTACTS_KEY, "[]");
 
+        // Send the contacts to the watch
         new Thread(() -> {
             try {
+                // get a list of connected nodes
                 List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+
+                // iterate through the nodes and send a message to each one
                 for (Node node : nodes) {
-                    Tasks.await(Wearable.getMessageClient(this)
-                            .sendMessage(node.getId(), CONTACTS_DATA_PATH, json.getBytes()));
+                    Tasks.await(Wearable.getMessageClient(this).sendMessage(node.getId(), CONTACTS_DATA_PATH, json.getBytes()));
                 }
+
             } catch (ExecutionException | InterruptedException e) {
                 Log.e(Tag.DataLayerListenerService, "Error sending contacts to watch", e);
             }
         }).start();
     }
 
+    // Send SOS to all contacts
     private void sendSosToAllContacts(String message) {
+        // Retrieve contacts from shared preferences
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = sharedPreferences.getString(CONTACTS_KEY, "[]");
         Gson gson = new Gson();
@@ -105,6 +119,7 @@ public class DataLayerListenerService extends WearableListenerService {
             return;
         }
 
+        // Send SOS to all contacts
         SmsManager smsManager = SmsManager.getDefault();
         for (Contact contact : contactList) {
             try {
@@ -115,6 +130,7 @@ public class DataLayerListenerService extends WearableListenerService {
             }
         }
 
+        // Show a toast message
         Toast.makeText(this, "SOS Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
         Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
     }

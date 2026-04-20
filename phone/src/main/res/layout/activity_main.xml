@@ -9,10 +9,10 @@
 
     <androidx.wear.widget.WearableRecyclerView
         android:id="@+id/rvContacts"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="@dimen/_0dp"
+        android:layout_height="@dimen/_0dp"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:layout_marginBottom="@dimen/spacing_small"
         app:layout_constraintBottom_toTopOf="@+id/llButtons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -20,28 +20,28 @@
 
     <LinearLayout
         android:id="@+id/llButtons"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
+        android:padding="@dimen/spacing_small"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <Button
-            android:id="@+id/button"
-            android:layout_width="0dp"
+            android:id="@+id/btnHello"
+            android:layout_width="@dimen/_0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Hello Watch" />
+            android:text="@string/hello_watch" />
 
         <Button
             android:id="@+id/btnAddContact"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/_0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="@dimen/spacing_small"
             android:layout_weight="1"
-            android:text="Add Contact" />
+            android:text="@string/add_contact" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

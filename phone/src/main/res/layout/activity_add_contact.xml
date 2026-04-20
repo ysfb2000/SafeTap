@@ -4,12 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:padding="@dimen/spacing_medium"
     tools:context=".AddContactActivity">
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilName"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -19,15 +19,15 @@
             android:id="@+id/etName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Contact Name"
+            android:hint="@string/contact_name"
             android:inputType="textPersonName" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <LinearLayout
         android:id="@+id/llPhoneContainer"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/spacing_medium"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -35,7 +35,7 @@
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilCountryCode"
-            android:layout_width="100dp"
+            android:layout_width="@dimen/country_code_width"
             android:layout_height="wrap_content"
             app:prefixText="+">
 
@@ -43,33 +43,33 @@
                 android:id="@+id/etCountryCode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Code"
+                android:hint="@string/code"
                 android:inputType="number"
                 android:maxLength="4" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPhone"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/_0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="@dimen/spacing_small"
             android:layout_weight="1">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPhone"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Phone Number"
+                android:hint="@string/phone_number"
                 android:inputType="phone" />
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
     <Button
         android:id="@+id/btnSave"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Save"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="@string/save"
         app:layout_constraintEnd_toStartOf="@+id/btnCancel"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -78,10 +78,10 @@
     <Button
         android:id="@+id/btnCancel"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/_0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:text="Cancel"
+        android:layout_marginStart="@dimen/spacing_small"
+        android:text="@string/cancel"
         app:layout_constraintBottom_toBottomOf="@+id/btnSave"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

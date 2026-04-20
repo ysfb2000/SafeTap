@@ -14,7 +14,7 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.util.Log;
-import android.widget.Button;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -23,8 +23,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.wear.widget.WearableLinearLayoutManager;
-import androidx.wear.widget.WearableRecyclerView;
 
+import com.example.phone.databinding.ActivityMainBinding;
 import com.example.shared.adapter.ContactsAdapter;
 import com.example.shared.constants.MessageChannels;
 import com.example.shared.constants.Permission;
@@ -41,40 +41,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity {
-    private WearableRecyclerView rvContacts;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private ActivityMainBinding binding;
     private ContactsAdapter adapter;
     private List<Contact> contactList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        rvContacts = findViewById(R.id.rvContacts);
-        
+        // Create a binding object
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         // Use WearableLinearLayoutManager for WearableRecyclerView
-        rvContacts.setLayoutManager(new WearableLinearLayoutManager(this));
-        rvContacts.setEdgeItemsCenteringEnabled(true);
+        binding.rvContacts.setLayoutManager(new WearableLinearLayoutManager(this));
+        binding.rvContacts.setEdgeItemsCenteringEnabled(true);
 
+        // Load and display contacts
         loadAndDisplayContacts();
 
-        Button button = findViewById(R.id.button);
-        if (button != null) {
-            button.setOnClickListener(v -> sendMessageToWatch(MessageChannels.HELLO_PATH, "Hello from phone"));
-        }
+        // Initialize the listener
+        initListener();
 
-        Button btnAddContact = findViewById(R.id.btnAddContact);
-        if (btnAddContact != null) {
-            btnAddContact.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, AddContactActivity.class);
-                startActivity(intent);
-            });
-        }
-
+        // Check for SMS permission
         checkSmsPermission();
     }
 
+    // Initialize the listener
+    private void initListener() {
+        binding.btnHello.setOnClickListener(this);
+        binding.btnAddContact.setOnClickListener(this);
+    }
+
+    // Check for SMS permission
     private void checkSmsPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Handle permission result
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -96,30 +97,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Handle lifecycle onResume events
     @Override
     protected void onResume() {
         super.onResume();
         loadAndDisplayContacts();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
+    // load and display contacts
     private void loadAndDisplayContacts() {
         contactList = loadContacts();
         adapter = new ContactsAdapter(contactList);
-        
+
+        // Handle long click on a contact
         adapter.setOnContactLongClickListener(position -> {
             showDeleteConfirmationDialog(position);
         });
         
-        rvContacts.setAdapter(adapter);
+        binding.rvContacts.setAdapter(adapter);
     }
 
+    // Show a confirmation dialog before deleting a contact
     private void showDeleteConfirmationDialog(int position) {
         Contact contact = contactList.get(position);
+
+        // Show a confirmation dialog before deleting a contact
         new AlertDialog.Builder(this)
                 .setTitle("Delete Contact")
                 .setMessage("Are you sure you want to delete " + contact.getName() + "?")
@@ -134,7 +136,9 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
 
+    // Load contacts from shared preferences
     private List<Contact> loadContacts() {
+        // Load contacts from shared preferences
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = sharedPreferences.getString(CONTACTS_KEY, null);
@@ -144,9 +148,11 @@ public class MainActivity extends AppCompatActivity {
         if (list == null) {
             list = new ArrayList<>();
         }
+
         return list;
     }
 
+    // Save contacts to shared preferences
     private void saveContacts(List<Contact> list) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -158,12 +164,14 @@ public class MainActivity extends AppCompatActivity {
         sendContactsToWatch();
     }
 
+    // Send contacts to the watch
     private void sendContactsToWatch() {
         List<Contact> contacts = loadContacts();
         String json = new Gson().toJson(contacts);
         sendMessageToWatch(CONTACTS_DATA_PATH, json);
     }
 
+    // Send a message to the watch
     private void sendMessageToWatch(String path, String message) {
         new Thread(() -> {
             try {
@@ -179,46 +187,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // Handle button clicks
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
 
-    private void saveHeartRate(String heartRate) {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString(LAST_HEART_RATE_KEY, heartRate).apply();
-    }
-
-    private void saveHeartRateAlarmEnabled(boolean enabled) {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        sharedPreferences.edit().putBoolean(HEART_RATE_ALARM_ENABLED_KEY, enabled).apply();
-    }
-
-    private void sendSmsWithHeartRate(String message) {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        boolean isAlarmEnabled = sharedPreferences.getBoolean(HEART_RATE_ALARM_ENABLED_KEY, false);
-        
-        String finalMessage = message;
-        if (isAlarmEnabled) {
-            String lastHeartRate = sharedPreferences.getString(LAST_HEART_RATE_KEY, "N/A");
-            finalMessage += "\nMy current heartbeat is: " + lastHeartRate + " bpm";
-        }
-        
-        sendSmsToAllContacts(finalMessage);
-    }
-
-    private void sendSmsToAllContacts(String message) {
-        List<Contact> contacts = loadContacts();
-        if (contacts.isEmpty()) {
-            Toast.makeText(this, "No contacts found to send message", Toast.LENGTH_SHORT).show();
-            return;
+        // Handle button clicks
+        if (id == R.id.btnHello) {
+            sendMessageToWatch(MessageChannels.HELLO_PATH, "Hello from phone");
         }
 
-        SmsManager smsManager = SmsManager.getDefault();
-        for (Contact contact : contacts) {
-            try {
-                smsManager.sendTextMessage(contact.getPhone(), null, message, null, null);
-                Log.d(Tag.MainActivity, "SMS sent to: " + contact.getPhone());
-            } catch (Exception e) {
-                Log.e(Tag.MainActivity, "Failed to send SMS to " + contact.getPhone(), e);
-            }
+        // Handle button clicks
+        if (id == R.id.btnAddContact) {
+            Intent intent = new Intent(MainActivity.this, AddContactActivity.class);
+            startActivity(intent);
         }
-        Toast.makeText(this, "Message sent to all contacts", Toast.LENGTH_LONG).show();
+
     }
 }

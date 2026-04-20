@@ -12,11 +12,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.ComponentActivity;
 
 import com.example.safetap.R;
+import com.example.safetap.databinding.ActivityMainBinding;
 import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
 import com.google.android.gms.tasks.Tasks;
@@ -31,49 +33,50 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends ComponentActivity implements MessageClient.OnMessageReceivedListener {
+public class MainActivity extends ComponentActivity implements MessageClient.OnMessageReceivedListener, View.OnClickListener {
 
-
+    ActivityMainBinding mainBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        findViewById(R.id.btnGps).setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, GpsActivity.class);
-            startActivity(intent);
-        });
+        // Create a binding object
+        mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(mainBinding.getRoot());
 
-        findViewById(R.id.button2).setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
-            startActivity(intent);
-        });
-        
-        findViewById(R.id.btnSos).setOnClickListener(v -> {
-            Toast.makeText(this, "Long press to send SOS", Toast.LENGTH_SHORT).show();
-        });
+        requestContactsFromPhone();
 
-        findViewById(R.id.btnSos).setOnLongClickListener(v -> {
+        initListener();
+    }
+
+    // Initialize the listener
+    private void initListener() {
+        mainBinding.btnGps.setOnClickListener(this);
+        mainBinding.btnContact.setOnClickListener(this);
+        mainBinding.btnSos.setOnClickListener(this);
+        mainBinding.btnHeartbeat.setOnClickListener(this);
+
+
+        // Set up long click listener for the SOS button
+        mainBinding.btnSos.setOnLongClickListener(v -> {
             sendSosViaPhone();
             return true;
         });
-        
-        findViewById(R.id.button4).setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, HeartRateActivity.class);
-            startActivity(intent);
-        });
-
-        requestContactsFromPhone();
     }
 
+    // Request contacts from the phone by message
     private void requestContactsFromPhone() {
         new Thread(() -> {
             try {
+                // Get a list of connected nodes
                 List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+
+                // iterate through the nodes and send a message to each one
                 for (Node node : nodes) {
                     Wearable.getMessageClient(this).sendMessage(node.getId(), GET_CONTACTS_PATH, new byte[0]);
                 }
+
             } catch (Exception e) {
                 Log.e(Tag.MainActivity, "Error requesting contacts from phone", e);
             }
@@ -109,18 +112,6 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
         sharedPreferences.edit().putString(CONTACTS_KEY, json).apply();
     }
 
-    private List<Contact> loadContacts() {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString(CONTACTS_KEY, null);
-        Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
-        List<Contact> contactList = gson.fromJson(json, type);
-
-        if (contactList == null) {
-            contactList = new ArrayList<>();
-        }
-        return contactList;
-    }
 
     @Override
     protected void onResume() {
@@ -148,4 +139,29 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
             saveContacts(json);
         }
     }
+
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
+        if (id == R.id.btnGps) {
+            Intent intent = new Intent(MainActivity.this, GpsActivity.class);
+            startActivity(intent);
+        }
+
+        if (id == R.id.btnContact) {
+            Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
+            startActivity(intent);
+        }
+
+        if (id == R.id.btnSos) {
+            Toast.makeText(this, "Long press to send SOS", Toast.LENGTH_SHORT).show();
+        }
+
+        if (id == R.id.btnHeartbeat) {
+            Intent intent = new Intent(MainActivity.this, HeartRateActivity.class);
+            startActivity(intent);
+        }
+    }
+
+
 }

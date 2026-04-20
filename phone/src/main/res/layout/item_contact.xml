@@ -3,14 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="@dimen/spacing_small">
 
     <TextView
         android:id="@+id/tvName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
-        android:textSize="14sp"
+        android:textSize="@dimen/text_size_body"
         android:textStyle="bold" />
 
     <TextView
@@ -18,5 +18,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
-        android:textSize="14sp" />
+        android:textSize="@dimen/text_size_body" />
+
 </LinearLayout>
