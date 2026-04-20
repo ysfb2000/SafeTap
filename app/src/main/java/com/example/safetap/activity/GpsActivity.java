@@ -1,8 +1,8 @@
 package com.example.safetap.activity;
 
+import static com.example.shared.constants.MessageChannels.SEND_LOCATION_SMS_PATH;
+
 import android.Manifest;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.safetap.R;
-import com.example.shared.models.Contact;
+import com.example.shared.constants.Tag;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
@@ -32,13 +32,9 @@ import java.util.List;
 
 public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final String TAG = "GpsActivity";
     private GoogleMap mMap;
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
-    private static final String PREFS_NAME = "SafeTapPrefs";
-    private static final String CONTACTS_KEY = "contacts_list";
-    private static final String SEND_LOCATION_SMS_PATH = "/send_location_sms";
     private Location lastLocation;
 
     @Override
@@ -115,7 +111,7 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
                     }
                     runOnUiThread(() -> Toast.makeText(this, "Location sent to phone", Toast.LENGTH_SHORT).show());
                 } catch (Exception e) {
-                    Log.e(TAG, "Error sending location to phone", e);
+                    Log.e(Tag.GpsActivity, "Error sending location to phone", e);
                     runOnUiThread(() -> Toast.makeText(this, "Error sending location", Toast.LENGTH_SHORT).show());
                 }
             }).start();

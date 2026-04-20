@@ -1,5 +1,8 @@
 package com.example.phone;
 
+import static com.example.shared.constants.Common.CONTACTS_KEY;
+import static com.example.shared.constants.Common.PREFS_NAME;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,9 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AddContactActivity extends AppCompatActivity {
-
-    private static final String PREFS_NAME = "SafeTapPrefs";
-    private static final String CONTACTS_KEY = "contacts_list";
 
     private EditText etName;
     private EditText etCountryCode;

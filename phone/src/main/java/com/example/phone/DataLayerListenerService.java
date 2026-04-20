@@ -1,10 +1,19 @@
 package com.example.phone;
 
+import static com.example.shared.constants.Common.CONTACTS_KEY;
+import static com.example.shared.constants.Common.PREFS_NAME;
+import static com.example.shared.constants.MessageChannels.CONTACTS_DATA_PATH;
+import static com.example.shared.constants.MessageChannels.GET_CONTACTS_PATH;
+import static com.example.shared.constants.MessageChannels.SEND_LOCATION_SMS_PATH;
+import static com.example.shared.constants.MessageChannels.SEND_SOS_PATH;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.gms.wearable.MessageEvent;
@@ -21,20 +30,50 @@ import java.util.concurrent.ExecutionException;
 
 public class DataLayerListenerService extends WearableListenerService {
 
-    private static final String TAG = "DataLayerService";
-    private static final String GET_CONTACTS_PATH = "/get_contacts";
-    private static final String CONTACTS_DATA_PATH = "/contacts_data";
-    private static final String SEND_SOS_PATH = "/send_sos";
-    private static final String PREFS_NAME = "SafeTapPrefs";
-    private static final String CONTACTS_KEY = "contacts_list";
+
+    @Override
+    public void onCreate(){
+        super.onCreate();
+        // Toast.makeText(this, "Service created!", Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if (GET_CONTACTS_PATH.equals(messageEvent.getPath())) {
             sendContactsToWatch();
         } else if (SEND_SOS_PATH.equals(messageEvent.getPath())) {
-            sendSosToAllContacts();
+            sendSosToAllContacts(new String(messageEvent.getData()));
+        } else if (SEND_LOCATION_SMS_PATH.equals(messageEvent.getPath())) {
+            sendLocationToAllContacts(new String(messageEvent.getData()));
         }
+    }
+
+    private void sendLocationToAllContacts(String message) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = sharedPreferences.getString(CONTACTS_KEY, "[]");
+        Gson gson = new Gson();
+
+        Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
+
+        List<Contact> contactList = gson.fromJson(json, type);
+
+        if (contactList == null || contactList.isEmpty()) {
+            Log.w(Tag.DataLayerListenerService, "No contacts found to send location");
+            return;
+        }
+
+        SmsManager smsManager = SmsManager.getDefault();
+        for (Contact contact : contactList) {
+            try {
+                smsManager.sendTextMessage(contact.getFullPhone(), null, message, null, null);
+                Log.d(Tag.DataLayerListenerService, "Location sent to: " + contact.getFullPhone());
+            } catch (Exception e) {
+                Log.e(Tag.DataLayerListenerService, "Failed to send location to " + contact.getFullPhone(), e);
+            }
+        }
+
+        Toast.makeText(this, "Location Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
     }
 
     private void sendContactsToWatch() {
@@ -49,12 +88,12 @@ public class DataLayerListenerService extends WearableListenerService {
                             .sendMessage(node.getId(), CONTACTS_DATA_PATH, json.getBytes()));
                 }
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(TAG, "Error sending contacts to watch", e);
+                Log.e(Tag.DataLayerListenerService, "Error sending contacts to watch", e);
             }
         }).start();
     }
 
-    private void sendSosToAllContacts() {
+    private void sendSosToAllContacts(String message) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         String json = sharedPreferences.getString(CONTACTS_KEY, "[]");
         Gson gson = new Gson();
@@ -62,19 +101,21 @@ public class DataLayerListenerService extends WearableListenerService {
         List<Contact> contactList = gson.fromJson(json, type);
 
         if (contactList == null || contactList.isEmpty()) {
-            Log.w(TAG, "No contacts found to send SOS");
+            Log.w(Tag.DataLayerListenerService, "No contacts found to send SOS");
             return;
         }
 
-        String message = "Emergency! I need help! This is an SOS message from SafeTap.";
         SmsManager smsManager = SmsManager.getDefault();
         for (Contact contact : contactList) {
             try {
-                smsManager.sendTextMessage(contact.getPhone(), null, message, null, null);
-                Log.d(TAG, "SOS sent to: " + contact.getPhone());
+                smsManager.sendTextMessage(contact.getFullPhone(), null, message, null, null);
+                Log.d(Tag.DataLayerListenerService, "SOS sent to: " + contact.getFullPhone());
             } catch (Exception e) {
-                Log.e(TAG, "Failed to send SOS to " + contact.getPhone(), e);
+                Log.e(Tag.DataLayerListenerService, "Failed to send SOS to " + contact.getFullPhone(), e);
             }
         }
+
+        Toast.makeText(this, "SOS Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
     }
 }

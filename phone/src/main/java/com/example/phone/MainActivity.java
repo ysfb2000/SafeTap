@@ -1,5 +1,11 @@
 package com.example.phone;
 
+import static com.example.shared.constants.Common.CONTACTS_KEY;
+import static com.example.shared.constants.Common.HEART_RATE_ALARM_ENABLED_KEY;
+import static com.example.shared.constants.Common.LAST_HEART_RATE_KEY;
+import static com.example.shared.constants.Common.PREFS_NAME;
+import static com.example.shared.constants.MessageChannels.CONTACTS_DATA_PATH;
+
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -20,10 +26,11 @@ import androidx.wear.widget.WearableLinearLayoutManager;
 import androidx.wear.widget.WearableRecyclerView;
 
 import com.example.shared.adapter.ContactsAdapter;
+import com.example.shared.constants.MessageChannels;
+import com.example.shared.constants.Permission;
+import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
 import com.google.android.gms.tasks.Tasks;
-import com.google.android.gms.wearable.MessageClient;
-import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
@@ -34,23 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
-
-    private static final String TAG = "PhoneMainActivity";
-    private static final String PATH = "/hello";
-    private static final String GET_CONTACTS_PATH = "/get_contacts";
-    private static final String CONTACTS_DATA_PATH = "/contacts_data";
-    private static final String SEND_SOS_PATH = "/send_sos";
-    private static final String SEND_LOCATION_SMS_PATH = "/send_location_sms";
-    private static final String HEART_RATE_DATA_PATH = "/heart_rate_data";
-    private static final String HEART_RATE_ALARM_ENABLED_PATH = "/heart_rate_alarm_enabled";
-    
-    private static final String PREFS_NAME = "SafeTapPrefs";
-    private static final String CONTACTS_KEY = "contacts_list";
-    private static final String HEART_RATE_ALARM_ENABLED_KEY = "heart_rate_alarm_enabled";
-    private static final String LAST_HEART_RATE_KEY = "last_heart_rate";
-    private static final int PERMISSION_REQUEST_SEND_SMS = 1;
-
+public class MainActivity extends AppCompatActivity {
     private WearableRecyclerView rvContacts;
     private ContactsAdapter adapter;
     private List<Contact> contactList;
@@ -70,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
 
         Button button = findViewById(R.id.button);
         if (button != null) {
-            button.setOnClickListener(v -> sendMessageToWatch(PATH, "Hello from phone"));
+            button.setOnClickListener(v -> sendMessageToWatch(MessageChannels.HELLO_PATH, "Hello from phone"));
         }
 
         Button btnAddContact = findViewById(R.id.btnAddContact);
@@ -89,14 +80,14 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.SEND_SMS},
-                    PERMISSION_REQUEST_SEND_SMS);
+                    Permission.PERMISSION_REQUEST_SEND_SMS);
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_SEND_SMS) {
+        if (requestCode == Permission.PERMISSION_REQUEST_SEND_SMS) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "SMS Permission Granted", Toast.LENGTH_SHORT).show();
             } else {
@@ -109,13 +100,11 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
     protected void onResume() {
         super.onResume();
         loadAndDisplayContacts();
-        Wearable.getMessageClient(this).addListener(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        Wearable.getMessageClient(this).removeListener(this);
     }
 
     private void loadAndDisplayContacts() {
@@ -184,34 +173,12 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
                             .sendMessage(node.getId(), path, message.getBytes()));
                 }
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(TAG, "Error sending message", e);
+                Log.e(Tag.MainActivity, "Error sending message", e);
             }
         }).start();
     }
 
-    @Override
-    public void onMessageReceived(MessageEvent messageEvent) {
-        if (GET_CONTACTS_PATH.equals(messageEvent.getPath())) {
-            sendContactsToWatch();
-        } else if (SEND_SOS_PATH.equals(messageEvent.getPath())) {
-            runOnUiThread(() -> {
-                Toast.makeText(this, "SOS Request Received!", Toast.LENGTH_SHORT).show();
-                sendSmsWithHeartRate("Emergency! I need help! This is an SOS message from SafeTap.");
-            });
-        } else if (SEND_LOCATION_SMS_PATH.equals(messageEvent.getPath())) {
-            String message = new String(messageEvent.getData());
-            runOnUiThread(() -> {
-                Toast.makeText(this, "Location SMS Request Received!", Toast.LENGTH_SHORT).show();
-                sendSmsWithHeartRate(message);
-            });
-        } else if (HEART_RATE_DATA_PATH.equals(messageEvent.getPath())) {
-            String heartRate = new String(messageEvent.getData());
-            saveHeartRate(heartRate);
-        } else if (HEART_RATE_ALARM_ENABLED_PATH.equals(messageEvent.getPath())) {
-            boolean enabled = new String(messageEvent.getData()).equals("true");
-            saveHeartRateAlarmEnabled(enabled);
-        }
-    }
+
 
     private void saveHeartRate(String heartRate) {
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -247,9 +214,9 @@ public class MainActivity extends AppCompatActivity implements MessageClient.OnM
         for (Contact contact : contacts) {
             try {
                 smsManager.sendTextMessage(contact.getPhone(), null, message, null, null);
-                Log.d(TAG, "SMS sent to: " + contact.getPhone());
+                Log.d(Tag.MainActivity, "SMS sent to: " + contact.getPhone());
             } catch (Exception e) {
-                Log.e(TAG, "Failed to send SMS to " + contact.getPhone(), e);
+                Log.e(Tag.MainActivity, "Failed to send SMS to " + contact.getPhone(), e);
             }
         }
         Toast.makeText(this, "Message sent to all contacts", Toast.LENGTH_LONG).show();

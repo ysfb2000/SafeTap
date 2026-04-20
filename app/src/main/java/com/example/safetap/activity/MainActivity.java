@@ -1,9 +1,15 @@
 package com.example.safetap.activity;
 
+import static com.example.shared.constants.Common.CONTACTS_KEY;
+import static com.example.shared.constants.Common.PREFS_NAME;
+import static com.example.shared.constants.MessageChannels.CONTACTS_DATA_PATH;
+import static com.example.shared.constants.MessageChannels.GET_CONTACTS_PATH;
+import static com.example.shared.constants.MessageChannels.HELLO_PATH;
+import static com.example.shared.constants.MessageChannels.SEND_SOS_PATH;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -11,6 +17,7 @@ import android.widget.Toast;
 import androidx.activity.ComponentActivity;
 
 import com.example.safetap.R;
+import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.gms.wearable.MessageClient;
@@ -26,13 +33,7 @@ import java.util.List;
 
 public class MainActivity extends ComponentActivity implements MessageClient.OnMessageReceivedListener {
 
-    private static final String TAG = "MainActivity";
-    private static final String PATH = "/hello";
-    private static final String GET_CONTACTS_PATH = "/get_contacts";
-    private static final String CONTACTS_DATA_PATH = "/contacts_data";
-    private static final String SEND_SOS_PATH = "/send_sos";
-    private static final String PREFS_NAME = "SafeTapPrefs";
-    private static final String CONTACTS_KEY = "contacts_list";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +75,7 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
                     Wearable.getMessageClient(this).sendMessage(node.getId(), GET_CONTACTS_PATH, new byte[0]);
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Error requesting contacts from phone", e);
+                Log.e(Tag.MainActivity, "Error requesting contacts from phone", e);
             }
         }).start();
     }
@@ -87,12 +88,17 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
                     runOnUiThread(() -> Toast.makeText(this, "No phone connected", Toast.LENGTH_SHORT).show());
                     return;
                 }
+
+                String message = "Emergency! I need help! This is an SOS message from SafeTap.";
+
                 for (Node node : nodes) {
-                    Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_SOS_PATH, new byte[0]);
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_SOS_PATH, message.getBytes());
                 }
+
                 runOnUiThread(() -> Toast.makeText(this, "SOS request sent to phone", Toast.LENGTH_SHORT).show());
+
             } catch (Exception e) {
-                Log.e(TAG, "Error sending SOS request to phone", e);
+                Log.e(Tag.MainActivity, "Error sending SOS request to phone", e);
                 runOnUiThread(() -> Toast.makeText(this, "Error sending SOS request", Toast.LENGTH_SHORT).show());
             }
         }).start();
@@ -130,7 +136,7 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        if (PATH.equals(messageEvent.getPath())) {
+        if (HELLO_PATH.equals(messageEvent.getPath())) {
             String message = new String(messageEvent.getData());
 
             runOnUiThread(() ->

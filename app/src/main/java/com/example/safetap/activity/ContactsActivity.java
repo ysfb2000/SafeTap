@@ -11,6 +11,9 @@ import androidx.wear.widget.WearableRecyclerView;
 
 import com.example.safetap.R;
 import com.example.shared.adapter.ContactsAdapter;
+import com.example.shared.constants.Common;
+import com.example.shared.constants.MessageChannels;
+import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.gms.wearable.MessageClient;
@@ -26,12 +29,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 public class ContactsActivity extends AppCompatActivity implements MessageClient.OnMessageReceivedListener {
-
-    private static final String TAG = "WatchContactsActivity";
-    private static final String PREFS_NAME = "SafeTapPrefs";
-    private static final String CONTACTS_KEY = "contacts_list";
-    private static final String GET_CONTACTS_PATH = "/get_contacts";
-    private static final String CONTACTS_DATA_PATH = "/contacts_data";
 
     private WearableRecyclerView recyclerView;
     private ContactsAdapter adapter;
@@ -72,18 +69,18 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
             try {
                 List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
                 for (Node node : nodes) {
-                    Wearable.getMessageClient(this).sendMessage(node.getId(), GET_CONTACTS_PATH, new byte[0]);
+                    Wearable.getMessageClient(this).sendMessage(node.getId(), MessageChannels.GET_CONTACTS_PATH, new byte[0]);
                 }
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(TAG, "Error requesting contacts", e);
+                Log.e(Tag.WatchContactsActivity, "Error requesting contacts", e);
             }
         }).start();
     }
 
     private void loadContactsFromPrefs() {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
-        String json = sharedPreferences.getString(CONTACTS_KEY, null);
+        String json = sharedPreferences.getString(Common.CONTACTS_KEY, null);
         Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
         contactList = gson.fromJson(json, type);
 
@@ -93,15 +90,15 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
     }
 
     private void saveContactsToPrefs(String json) {
-        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(CONTACTS_KEY, json);
+        editor.putString(Common.CONTACTS_KEY, json);
         editor.apply();
     }
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        if (CONTACTS_DATA_PATH.equals(messageEvent.getPath())) {
+        if (MessageChannels.CONTACTS_DATA_PATH.equals(messageEvent.getPath())) {
             String json = new String(messageEvent.getData());
             saveContactsToPrefs(json);
             

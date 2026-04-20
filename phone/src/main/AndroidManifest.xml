@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
     <uses-permission android:name="android.permission.SEND_SMS" />
 
     <application
@@ -29,14 +32,24 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />
-                <data
-                    android:host="*"
-                    android:pathPrefix="/get_contacts"
-                    android:scheme="wear" />
-                <data
-                    android:host="*"
-                    android:pathPrefix="/send_sos"
-                    android:scheme="wear" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/get_contacts" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/send_sos" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/send_sos" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/send_location_sms" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/heart_rate_data" />
+                <data android:scheme="wear" />
+                <data android:host="*" />
+                <data android:pathPrefix="/heart_rate_alarm_enabled" />
             </intent-filter>
         </service>
     </application>
