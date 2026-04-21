@@ -150,7 +150,7 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
 
                 adapter.notifyDataSetChanged();
 
-                updateUI(); // ✅ IMPORTANT FIX
+                updateUI();
             });
         }
     }
