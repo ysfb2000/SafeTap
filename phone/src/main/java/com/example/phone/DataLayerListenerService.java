@@ -79,8 +79,8 @@ public class DataLayerListenerService extends WearableListenerService {
         }
 
         // Show a toast message
-        Toast.makeText(this, "Location Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.location_sent_all), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.sms_prefix) + message, Toast.LENGTH_LONG).show();
     }
 
     // Send contacts to the watch
@@ -132,7 +132,7 @@ public class DataLayerListenerService extends WearableListenerService {
         }
 
         // Show a toast message
-        Toast.makeText(this, "SOS Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.sos_sent_all), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.sms_prefix) + message, Toast.LENGTH_LONG).show();
     }
 }

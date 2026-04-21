@@ -51,7 +51,7 @@ public class AddContactActivity extends AppCompatActivity implements View.OnClic
 
         // Check if any field is empty
         if (name.isEmpty() || countryCode.isEmpty() || phoneNumber.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -60,7 +60,7 @@ public class AddContactActivity extends AppCompatActivity implements View.OnClic
         contactList.add(new Contact(name, countryCode, phoneNumber));
         saveContacts(contactList);
 
-        Toast.makeText(this, "Contact saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,  getString(R.string.contact_saved), Toast.LENGTH_SHORT).show();
         finish();
     }
 

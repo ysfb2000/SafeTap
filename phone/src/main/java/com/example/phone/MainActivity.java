@@ -90,9 +90,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == Permission.PERMISSION_REQUEST_SEND_SMS) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "SMS Permission Granted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,  getString(R.string.sms_permission_granted), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "SMS Permission Denied. SOS will not work.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, getString(R.string.sms_permission_denied), Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -123,16 +123,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Show a confirmation dialog before deleting a contact
         new AlertDialog.Builder(this)
-                .setTitle("Delete Contact")
-                .setMessage("Are you sure you want to delete " + contact.getName() + "?")
-                .setPositiveButton("Delete", (dialog, which) -> {
+                .setTitle(getString(R.string.delete_contact_title))
+                .setMessage(getString(R.string.delete_contact_message, contact.getName()))
+                .setPositiveButton(getString(R.string.delete), (dialog, which) -> {
                     contactList.remove(position);
                     saveContacts(contactList);
                     adapter.notifyItemRemoved(position);
                     // Sync with watch after deletion
                     sendContactsToWatch();
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.cancel), null)
                 .show();
     }
 
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .sendMessage(node.getId(), path, message.getBytes()));
                 }
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(Tag.MainActivity, "Error sending message", e);
+                Log.e(Tag.MainActivity, getString(R.string.error_sending_msg), e);
             }
         }).start();
     }
@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Handle button clicks
         if (id == R.id.btnHello) {
-            sendMessageToWatch(MessageChannels.HELLO_PATH, "Hello from phone");
+            sendMessageToWatch(MessageChannels.HELLO_PATH, getString(R.string.hello_from_phone));
         }
 
         // Handle button clicks
