@@ -1,4 +1,4 @@
-package com.example.phone;
+package com.example.phone.activity;
 
 import static com.example.shared.constants.Common.PREFS_NAME;
 import static com.example.shared.constants.Common.SMS_HISTORY_KEY;
@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.phone.adapter.SmsHistoryAdapter;
 import com.example.phone.databinding.ActivitySmsHistoryBinding;
 import com.example.shared.models.SmsHistory;
 import com.google.gson.Gson;

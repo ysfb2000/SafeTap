@@ -1,4 +1,4 @@
-package com.example.phone;
+package com.example.phone.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -6,6 +6,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.phone.R;
 import com.example.shared.models.SmsHistory;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,11 +42,13 @@ public class SmsHistoryAdapter extends RecyclerView.Adapter<SmsHistoryAdapter.Sm
         holder.tvTimestamp.setText(dateFormat.format(new Date(history.getTimestamp())));
     }
 
+    // Return the number of items in the list
     @Override
     public int getItemCount() {
         return historyList.size();
     }
 
+    // ViewHolder class for the RecyclerView
     public static class SmsViewHolder extends RecyclerView.ViewHolder {
         public TextView tvRecipient, tvMessage, tvTimestamp;
 

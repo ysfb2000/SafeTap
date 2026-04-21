@@ -19,7 +19,7 @@
             android:text="@string/emergency_contact_list"
             android:textSize="@dimen/title_text_size"
             android:textStyle="bold"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/theme_sos"
             android:gravity="center"
             android:padding="@dimen/title_padding"
             android:maxLines="1"

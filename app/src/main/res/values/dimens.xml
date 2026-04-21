@@ -43,13 +43,13 @@
 
     <dimen name="contact_card_padding">6dp</dimen>
 
-    <dimen name="contact_name_text_size">13sp</dimen>
+    <dimen name="contact_name_text_size">11sp</dimen>
     <dimen name="contact_phone_text_size">11sp</dimen>
     <dimen name="contact_phone_margin_top">1dp</dimen>
 
     <dimen name="screen_padding">8dp</dimen>
     <dimen name="title_padding">6dp</dimen>
 
-    <dimen name="title_text_size">14sp</dimen>
+    <dimen name="title_text_size">11sp</dimen>
     <dimen name="empty_text_size">13sp</dimen>
 </resources>

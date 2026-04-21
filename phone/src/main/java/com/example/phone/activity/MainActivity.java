@@ -1,4 +1,4 @@
-package com.example.phone;
+package com.example.phone.activity;
 
 import static com.example.shared.constants.Common.CONTACTS_KEY;
 import static com.example.shared.constants.Common.PREFS_NAME;
@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.wear.widget.WearableLinearLayoutManager;
 
+import com.example.phone.R;
 import com.example.phone.databinding.ActivityMainBinding;
 import com.example.shared.adapter.ContactsAdapter;
 import com.example.shared.constants.MessageChannels;

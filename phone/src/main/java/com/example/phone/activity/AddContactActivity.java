@@ -1,4 +1,4 @@
-package com.example.phone;
+package com.example.phone.activity;
 
 import static com.example.shared.constants.Common.CONTACTS_KEY;
 import static com.example.shared.constants.Common.PREFS_NAME;
@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.phone.R;
 import com.example.phone.databinding.ActivityAddContactBinding;
 import com.example.shared.models.Contact;
 import com.google.gson.Gson;

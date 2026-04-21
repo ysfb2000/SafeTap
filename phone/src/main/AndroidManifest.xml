@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SafeTap">
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,16 +23,16 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddContactActivity"
+            android:name=".activity.AddContactActivity"
             android:exported="false"
             android:label="Add Emergency Contact" />
         <activity
-            android:name=".SmsHistoryActivity"
+            android:name=".activity.SmsHistoryActivity"
             android:exported="false"
             android:label="@string/sms_history" />
 
         <service
-            android:name=".DataLayerListenerService"
+            android:name=".activity.DataLayerListenerService"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.gms.wearable.MESSAGE_RECEIVED" />

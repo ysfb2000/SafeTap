@@ -1,4 +1,4 @@
-package com.example.phone;
+package com.example.phone.activity;
 
 import static com.example.shared.constants.Common.CONTACTS_KEY;
 import static com.example.shared.constants.Common.PREFS_NAME;
@@ -14,6 +14,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.phone.R;
 import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
 import com.example.shared.models.SmsHistory;

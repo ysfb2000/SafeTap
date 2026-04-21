@@ -8,7 +8,7 @@
     android:layout_marginVertical="@dimen/contact_card_margin_vertical"
     app:cardCornerRadius="@dimen/contact_card_corner_radius"
     app:cardElevation="@dimen/contact_card_elevation"
-    app:cardBackgroundColor="@color/contact_card_background">
+    >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,7 +24,7 @@
             android:text="@string/contact_name_placeholder"
             android:textStyle="bold"
             android:textSize="@dimen/contact_name_text_size"
-            android:textColor="@color/contact_card_text_primary"
+            android:textColor="#AAA"
             android:maxLines="1"
             android:ellipsize="end" />
 
