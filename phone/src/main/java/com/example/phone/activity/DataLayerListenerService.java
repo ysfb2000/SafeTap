@@ -65,7 +65,7 @@ public class DataLayerListenerService extends WearableListenerService {
         List<Contact> contactList = gson.fromJson(json, type);
 
         if (contactList == null || contactList.isEmpty()) {
-            Log.w(Tag.DataLayerListenerService, "No contacts found to send location");
+            Log.w(Tag.DataLayerListenerService,  getString(R.string.log_no_contacts_location));
             return;
         }
 
@@ -74,10 +74,10 @@ public class DataLayerListenerService extends WearableListenerService {
         for (Contact contact : contactList) {
             try {
                 smsManager.sendTextMessage(contact.getFullPhone(), null, message, null, null);
-                Log.d(Tag.DataLayerListenerService, "Location sent to: " + contact.getFullPhone());
+                Log.d(Tag.DataLayerListenerService, getString(R.string.log_location_sent, contact.getFullPhone()));
                 saveSmsToHistory(contact.getName(), message);
             } catch (Exception e) {
-                Log.e(Tag.DataLayerListenerService, "Failed to send location to " + contact.getFullPhone(), e);
+                Log.e(Tag.DataLayerListenerService, getString(R.string.log_location_failed, contact.getFullPhone()), e);
             }
         }
 
@@ -117,7 +117,7 @@ public class DataLayerListenerService extends WearableListenerService {
                 }
 
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(Tag.DataLayerListenerService, "Error sending contacts to watch", e);
+                Log.e(Tag.DataLayerListenerService, getString(R.string.log_error_sending_contacts), e);
             }
         }).start();
     }
@@ -132,7 +132,7 @@ public class DataLayerListenerService extends WearableListenerService {
         List<Contact> contactList = gson.fromJson(json, type);
 
         if (contactList == null || contactList.isEmpty()) {
-            Log.w(Tag.DataLayerListenerService, "No contacts found to send SOS");
+            Log.w(Tag.DataLayerListenerService, getString(R.string.log_no_contacts_sos));
             return;
         }
 
@@ -141,10 +141,10 @@ public class DataLayerListenerService extends WearableListenerService {
         for (Contact contact : contactList) {
             try {
                 smsManager.sendTextMessage(contact.getFullPhone(), null, message, null, null);
-                Log.d(Tag.DataLayerListenerService, "SOS sent to: " + contact.getFullPhone());
+                Log.d(Tag.DataLayerListenerService, getString(R.string.log_sos_sent, contact.getFullPhone()));
                 saveSmsToHistory(contact.getName(), message);
             } catch (Exception e) {
-                Log.e(Tag.DataLayerListenerService, "Failed to send SOS to " + contact.getFullPhone(), e);
+                Log.e(Tag.DataLayerListenerService, getString(R.string.log_sos_failed, contact.getFullPhone()), e);
             }
         }
 
