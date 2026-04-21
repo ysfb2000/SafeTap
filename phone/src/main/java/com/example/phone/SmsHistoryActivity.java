@@ -55,12 +55,28 @@ public class SmsHistoryActivity extends AppCompatActivity {
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    historyList.remove(position);
-                    saveHistory();
-                    adapter.notifyItemRemoved(position);
-                    updateUI();
-                }
+
+                if (position == RecyclerView.NO_POSITION) return;
+
+                new androidx.appcompat.app.AlertDialog.Builder(viewHolder.itemView.getContext())
+                        .setTitle("Delete History")
+                        .setMessage("Are you sure you want to delete this item?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+
+                            historyList.remove(position);
+                            saveHistory();
+                            adapter.notifyItemRemoved(position);
+                            updateUI();
+
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+
+                            // restore item if user cancels swipe delete
+                            adapter.notifyItemChanged(position);
+
+                        })
+                        .setCancelable(false)
+                        .show();
             }
         }).attachToRecyclerView(binding.rvSmsHistory);
 

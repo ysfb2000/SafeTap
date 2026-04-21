@@ -79,11 +79,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    contactList.remove(position);
-                    saveContacts(contactList);
-                    adapter.notifyItemRemoved(position);
-                }
+
+                if (position == RecyclerView.NO_POSITION) return;
+
+                new androidx.appcompat.app.AlertDialog.Builder(viewHolder.itemView.getContext())
+                        .setTitle("Delete Contact")
+                        .setMessage("Are you sure you want to delete this contact?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+
+                            contactList.remove(position);
+                            saveContacts(contactList);
+                            adapter.notifyItemRemoved(position);
+
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+
+                            adapter.notifyItemChanged(position); // restore item if cancelled
+
+                        })
+                        .setCancelable(false)
+                        .show();
             }
         }).attachToRecyclerView(binding.rvContacts);
     }
