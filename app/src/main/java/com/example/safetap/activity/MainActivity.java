@@ -78,7 +78,7 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
                 }
 
             } catch (Exception e) {
-                Log.e(Tag.MainActivity, "Error requesting contacts from phone", e);
+                Log.e(Tag.MainActivity, getString(R.string.error_request_contacts), e);
             }
         }).start();
     }
@@ -88,21 +88,21 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
             try {
                 List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
                 if (nodes.isEmpty()) {
-                    runOnUiThread(() -> Toast.makeText(this, "No phone connected", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(this, getString(R.string.no_phone_connected), Toast.LENGTH_SHORT).show());
                     return;
                 }
 
-                String message = "Emergency! I need help! This is an SOS message from SafeTap.";
+                String message = getString(R.string.sos_message);
 
                 for (Node node : nodes) {
                     Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_SOS_PATH, message.getBytes());
                 }
 
-                runOnUiThread(() -> Toast.makeText(this, "SOS request sent to phone", Toast.LENGTH_SHORT).show());
+                runOnUiThread(() -> Toast.makeText(this, getString(R.string.sos_sent), Toast.LENGTH_SHORT).show());
 
             } catch (Exception e) {
-                Log.e(Tag.MainActivity, "Error sending SOS request to phone", e);
-                runOnUiThread(() -> Toast.makeText(this, "Error sending SOS request", Toast.LENGTH_SHORT).show());
+                Log.e(Tag.MainActivity, getString(R.string.error_send_sos), e);
+                runOnUiThread(() -> Toast.makeText(this, getString(R.string.sos_error), Toast.LENGTH_SHORT).show());
             }
         }).start();
     }
@@ -154,7 +154,7 @@ public class MainActivity extends ComponentActivity implements MessageClient.OnM
         }
 
         if (id == R.id.btnSos) {
-            Toast.makeText(this, "Long press to send SOS", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.long_press_sos), Toast.LENGTH_SHORT).show();
         }
 
         if (id == R.id.btnHeartbeat) {

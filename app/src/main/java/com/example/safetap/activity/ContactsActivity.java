@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.wear.widget.WearableLinearLayoutManager;
@@ -61,6 +62,9 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
         recyclerView.setEdgeItemsCenteringEnabled(true);
         recyclerView.setLayoutManager(new WearableLinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+
+        //Update UI
+        updateUI();
     }
 
     // Handle lifecycle onResume events
@@ -86,7 +90,7 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
                     Wearable.getMessageClient(this).sendMessage(node.getId(), MessageChannels.GET_CONTACTS_PATH, new byte[0]);
                 }
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(Tag.WatchContactsActivity, "Error requesting contacts", e);
+                Log.e(Tag.WatchContactsActivity, getString(R.string.error_request_contacts), e);
             }
         }).start();
     }
@@ -104,6 +108,17 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
         }
     }
 
+    //Update UI for No Contacts Found
+    private void updateUI() {
+        if (contactList == null || contactList.isEmpty()) {
+            contactsBinding.tvEmptyContacts.setVisibility(View.VISIBLE);
+            contactsBinding.contactsRecyclerView.setVisibility(View.GONE);
+        } else {
+            contactsBinding.tvEmptyContacts.setVisibility(View.GONE);
+            contactsBinding.contactsRecyclerView.setVisibility(View.VISIBLE);
+        }
+    }
+
     // Save contacts to shared preferences
     private void saveContactsToPrefs(String json) {
         SharedPreferences sharedPreferences = getSharedPreferences(Common.PREFS_NAME, Context.MODE_PRIVATE);
@@ -116,20 +131,26 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
         if (MessageChannels.CONTACTS_DATA_PATH.equals(messageEvent.getPath())) {
+
             String json = new String(messageEvent.getData());
             saveContactsToPrefs(json);
 
-            // Create a TypeToken for the list of Contact objects
             Type type = new TypeToken<ArrayList<Contact>>() {}.getType();
-
-            // Convert the JSON string to a list of Contact objects
             List<Contact> newContacts = new Gson().fromJson(json, type);
 
-            // Update the contact list and notify the adapter
+            if (newContacts == null) {
+                newContacts = new ArrayList<>();
+            }
+
+            List<Contact> finalNewContacts = newContacts;
+
             runOnUiThread(() -> {
                 contactList.clear();
-                contactList.addAll(newContacts);
+                contactList.addAll(finalNewContacts);
+
                 adapter.notifyDataSetChanged();
+
+                updateUI(); // ✅ IMPORTANT FIX
             });
         }
     }

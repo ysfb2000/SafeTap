@@ -117,15 +117,15 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
     // Send the location to the phone
     private void sendLocationViaPhone() {
         if (lastLocation != null) {
-            String message = "My current location: https://www.google.com/maps/search/?api=1&query=" + 
-                    lastLocation.getLatitude() + "," + lastLocation.getLongitude();
+            String message = getString(R.string.my_location_prefix) + " " +
+                    buildMapsUrl(lastLocation.getLatitude(), lastLocation.getLongitude());
 
             new Thread(() -> {
                 try {
                     // Get a list of connected nodes
                     List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
                     if (nodes.isEmpty()) {
-                        runOnUiThread(() -> Toast.makeText(this, "No phone connected", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> Toast.makeText(this, getString(R.string.no_phone_connected), Toast.LENGTH_SHORT).show());
                         return;
                     }
 
@@ -134,15 +134,20 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
                         Wearable.getMessageClient(this).sendMessage(node.getId(), SEND_LOCATION_SMS_PATH, message.getBytes());
                     }
 
-                    runOnUiThread(() -> Toast.makeText(this, "Location sent to phone", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(this, getString(R.string.location_sent), Toast.LENGTH_SHORT).show());
                 } catch (Exception e) {
-                    Log.e(Tag.GpsActivity, "Error sending location to phone", e);
-                    runOnUiThread(() -> Toast.makeText(this, "Error sending location", Toast.LENGTH_SHORT).show());
+                    Log.e(Tag.GpsActivity, getString(R.string.location_error), e);
+                    runOnUiThread(() -> Toast.makeText(this, getString(R.string.location_error), Toast.LENGTH_SHORT).show());
                 }
             }).start();
         } else {
-            Toast.makeText(this, "Location not available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.location_not_available), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    //Map URL Helper builder
+    private String buildMapsUrl(double lat, double lng) {
+        return getString(R.string.google_maps_base_url) + lat + "," + lng;
     }
 
     // Handle permission result
@@ -153,7 +158,7 @@ public class GpsActivity extends AppCompatActivity implements OnMapReadyCallback
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 updateLocation();
             } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.location_permission_denied), Toast.LENGTH_SHORT).show();
             }
         }
     }

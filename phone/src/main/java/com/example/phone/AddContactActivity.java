@@ -49,18 +49,30 @@ public class AddContactActivity extends AppCompatActivity implements View.OnClic
         String countryCode = Objects.requireNonNull(binding.etCountryCode.getText()).toString().trim();
         String phoneNumber = Objects.requireNonNull(binding.etPhone.getText()).toString().trim();
 
-        // Check if any field is empty
+        // Empty field check
         if (name.isEmpty() || countryCode.isEmpty() || phoneNumber.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.fill_all_fields), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Save the contact
+        // Country code validation (max 3 digits, numbers only)
+        if (!countryCode.matches("\\d{1,3}")) {
+            Toast.makeText(this, getString(R.string.invalid_country_code), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Phone number validation (7–15 digits, numbers only)
+        if (!phoneNumber.matches("\\d{7,15}")) {
+            Toast.makeText(this, getString(R.string.invalid_phone_number), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Save contact
         List<Contact> contactList = loadContacts();
         contactList.add(new Contact(name, countryCode, phoneNumber));
         saveContacts(contactList);
 
-        Toast.makeText(this, "Contact saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.contact_saved), Toast.LENGTH_SHORT).show();
         finish();
     }
 

@@ -7,6 +7,7 @@ import static com.example.shared.constants.MessageChannels.GET_CONTACTS_PATH;
 import static com.example.shared.constants.MessageChannels.SEND_LOCATION_SMS_PATH;
 import static com.example.shared.constants.MessageChannels.SEND_SOS_PATH;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.telephony.SmsManager;
@@ -78,8 +79,8 @@ public class DataLayerListenerService extends WearableListenerService {
         }
 
         // Show a toast message
-        Toast.makeText(this, "Location Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.location_sent_all), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.sms_prefix) + message, Toast.LENGTH_LONG).show();
     }
 
     // Send contacts to the watch
@@ -131,7 +132,7 @@ public class DataLayerListenerService extends WearableListenerService {
         }
 
         // Show a toast message
-        Toast.makeText(this, "SOS Request Received and sent to all contacts!", Toast.LENGTH_SHORT).show();
-        Toast.makeText(this, "SMS:" + message, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.sos_sent_all), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.sms_prefix) + message, Toast.LENGTH_LONG).show();
     }
 }

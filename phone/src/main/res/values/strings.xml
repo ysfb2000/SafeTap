@@ -8,7 +8,6 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="please_fill_all_fields">Please fill in all fields</string>
-    <string name="contact_saved">Contact saved</string>
     <string name="delete_contact">Delete Contact</string>
     <string name="delete_confirmation">Are you sure you want to delete %1$s?</string>
     <string name="delete">Delete</string>
@@ -16,4 +15,20 @@
     <string name="sms_permission_denied">SMS Permission Denied. SOS will not work.</string>
     <string name="no_contacts_found">No contacts found to send message</string>
     <string name="message_sent_to_all">Message sent to all contacts</string>
+
+    <string name="delete_contact_title">Delete Contact</string>
+    <string name="delete_contact_message">Are you sure you want to delete %1$s?</string>
+
+    <string name="hello_from_phone">Hello from phone</string>
+    <string name="error_sending_msg">Error sending message</string>
+
+    <string name="location_sent_all">Location Request Received and sent to all contacts!</string>
+    <string name="sos_sent_all">SOS Request Received and sent to all contacts!</string>
+    <string name="sms_prefix">SMS:</string>
+
+    <string name="fill_all_fields">Please fill in all fields</string>
+    <string name="contact_saved">Contact saved</string>
+
+    <string name="invalid_country_code">Country code must be 1–3 digits</string>
+    <string name="invalid_phone_number">Enter a valid phone number (7–15 digits)</string>
 </resources>

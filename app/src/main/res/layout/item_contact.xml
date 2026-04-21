@@ -1,33 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="@dimen/item_contact_padding">
+    android:layout_marginHorizontal="@dimen/contact_card_margin_horizontal"
+    android:layout_marginVertical="@dimen/contact_card_margin_vertical"
+    app:cardCornerRadius="@dimen/contact_card_corner_radius"
+    app:cardElevation="@dimen/contact_card_elevation"
+    app:cardBackgroundColor="@color/contact_card_background">
 
-    <TextView
-        android:id="@+id/tvName"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/item_contact_margin_start"
-        android:padding="@dimen/_0dp"
-        android:textColor="@color/black"
-        android:textSize="@dimen/item_contact_text_size"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:padding="@dimen/contact_card_padding">
 
-    <TextView
-        android:id="@+id/tvPhone"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/item_contact_margin_start"
-        android:textColor="@color/black"
-        android:textSize="@dimen/item_contact_text_size" />
+        <!-- NAME -->
+        <TextView
+            android:id="@+id/tvName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/contact_name_placeholder"
+            android:textStyle="bold"
+            android:textSize="@dimen/contact_name_text_size"
+            android:textColor="@color/contact_card_text_primary"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_marginTop="@dimen/_0dp"
-        android:background="@android:color/darker_gray"
-        android:layout_height="@dimen/divider_height"/>
+        <!-- PHONE -->
+        <TextView
+            android:id="@+id/tvPhone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/contact_phone_placeholder"
+            android:textSize="@dimen/contact_phone_text_size"
+            android:textColor="@color/contact_card_text_secondary"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginTop="@dimen/contact_phone_margin_top" />
 
+    </LinearLayout>
 
-</LinearLayout>
+</androidx.cardview.widget.CardView>

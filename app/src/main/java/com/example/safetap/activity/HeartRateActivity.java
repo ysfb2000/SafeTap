@@ -58,8 +58,8 @@ public class HeartRateActivity extends AppCompatActivity implements SensorEventL
 
         // Check if the heart rate sensor is available
         if (heartRateSensor == null) {
-            tvHeartRate.setText("N/A");
-            Toast.makeText(this, "Heart Rate sensor not available", Toast.LENGTH_SHORT).show();
+            tvHeartRate.setText(getString(R.string.heart_rate_na));
+            Toast.makeText(this, getString(R.string.heart_rate_not_available), Toast.LENGTH_SHORT).show();
         }
 
         // Request permissions
@@ -129,7 +129,7 @@ public class HeartRateActivity extends AppCompatActivity implements SensorEventL
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (!(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                Toast.makeText(this, "Permissions required for features", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.permission_required), Toast.LENGTH_SHORT).show();
             }
         }
     }
