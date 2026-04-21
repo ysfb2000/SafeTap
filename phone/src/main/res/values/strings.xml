@@ -18,7 +18,7 @@
     <string name="message_sent_to_all">Message sent to all contacts</string>
 
     <string name="delete_contact_title">Delete Contact</string>
-    <string name="delete_contact_message">Are you sure you want to delete %1$s?</string>
+    <string name="delete_contact_message">Are you sure you want to delete this item?</string>
 
     <string name="hello_from_phone">Hello from phone</string>
     <string name="error_sending_msg">Error sending message</string>
