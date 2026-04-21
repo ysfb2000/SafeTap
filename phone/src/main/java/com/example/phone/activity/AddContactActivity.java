@@ -2,10 +2,12 @@ package com.example.phone.activity;
 
 import static com.example.shared.constants.Common.CONTACTS_KEY;
 import static com.example.shared.constants.Common.PREFS_NAME;
+import static com.example.shared.constants.MessageChannels.CONTACTS_DATA_PATH;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -13,7 +15,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.phone.R;
 import com.example.phone.databinding.ActivityAddContactBinding;
+import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
+import com.google.android.gms.tasks.Tasks;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.Wearable;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -21,6 +27,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 public class AddContactActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -99,6 +106,24 @@ public class AddContactActivity extends AppCompatActivity implements View.OnClic
         String json = gson.toJson(contactList);
         editor.putString(CONTACTS_KEY, json);
         editor.apply();
+
+        // Sync with watch after saving
+        sendContactsToWatch(json);
+    }
+
+    // Send contacts to the watch
+    private void sendContactsToWatch(String json) {
+        new Thread(() -> {
+            try {
+                List<Node> nodes = Tasks.await(Wearable.getNodeClient(this).getConnectedNodes());
+                for (Node node : nodes) {
+                    Tasks.await(Wearable.getMessageClient(this)
+                            .sendMessage(node.getId(), CONTACTS_DATA_PATH, json.getBytes()));
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                Log.e(Tag.MainActivity, getString(R.string.error_sending_msg), e);
+            }
+        }).start();
     }
 
     // Handle button clicks

@@ -16,10 +16,14 @@ import java.util.Locale;
 
 public class SmsHistoryAdapter extends RecyclerView.Adapter<SmsHistoryAdapter.SmsViewHolder> {
 
-    private final List<SmsHistory> historyList;
+    private List<SmsHistory> historyList;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
     public SmsHistoryAdapter(List<SmsHistory> historyList) {
+        this.historyList = historyList;
+    }
+
+    public void setHistoryList(List<SmsHistory> historyList) {
         this.historyList = historyList;
     }
 

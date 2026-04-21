@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.phone.R;
 import com.example.phone.adapter.SmsHistoryAdapter;
 import com.example.phone.databinding.ActivitySmsHistoryBinding;
 import com.example.shared.models.SmsHistory;
@@ -30,6 +31,7 @@ public class SmsHistoryActivity extends AppCompatActivity {
     private ActivitySmsHistoryBinding binding;
     private SmsHistoryAdapter adapter;
     private List<SmsHistory> historyList;
+    private SharedPreferences.OnSharedPreferenceChangeListener listener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +82,28 @@ public class SmsHistoryActivity extends AppCompatActivity {
             }
         }).attachToRecyclerView(binding.rvSmsHistory);
 
+        // Listen for history changes (e.g. when an SMS is sent from the background service)
+        listener = (sharedPreferences, key) -> {
+            if (SMS_HISTORY_KEY.equals(key)) {
+                runOnUiThread(() -> {
+                    loadHistory();
+                    adapter.setHistoryList(historyList);
+                    adapter.notifyDataSetChanged();
+                    updateUI();
+                });
+            }
+        };
+        getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).registerOnSharedPreferenceChangeListener(listener);
+
         updateUI();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (listener != null) {
+            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(listener);
+        }
     }
 
     private void loadHistory() {
@@ -99,12 +122,18 @@ public class SmsHistoryActivity extends AppCompatActivity {
     }
 
     private void saveHistory() {
+        // Unregister listener temporarily to avoid infinite loop or redundant updates
         SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
+        
         SharedPreferences.Editor editor = sharedPreferences.edit();
         Gson gson = new Gson();
         String json = gson.toJson(historyList);
         editor.putString(SMS_HISTORY_KEY, json);
         editor.apply();
+        
+        // Re-register listener
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
     }
 
     private void updateUI() {
