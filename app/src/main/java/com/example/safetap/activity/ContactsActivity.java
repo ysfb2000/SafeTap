@@ -86,7 +86,7 @@ public class ContactsActivity extends AppCompatActivity implements MessageClient
                     Wearable.getMessageClient(this).sendMessage(node.getId(), MessageChannels.GET_CONTACTS_PATH, new byte[0]);
                 }
             } catch (ExecutionException | InterruptedException e) {
-                Log.e(Tag.WatchContactsActivity, "Error requesting contacts", e);
+                Log.e(Tag.WatchContactsActivity, getString(R.string.error_request_contacts), e);
             }
         }).start();
     }

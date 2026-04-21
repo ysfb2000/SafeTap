@@ -7,6 +7,7 @@ import static com.example.shared.constants.MessageChannels.GET_CONTACTS_PATH;
 import static com.example.shared.constants.MessageChannels.SEND_LOCATION_SMS_PATH;
 import static com.example.shared.constants.MessageChannels.SEND_SOS_PATH;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.telephony.SmsManager;
