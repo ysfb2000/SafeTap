@@ -2,6 +2,7 @@
     <string name="app_name">SafeTap Contacts</string>
     <string name="hello_watch">Hello Watch</string>
     <string name="add_contact">Add Contact</string>
+    <string name="sms_history">SMS History</string>
     <string name="contact_name">Contact Name</string>
     <string name="code">Code</string>
     <string name="phone_number">Phone Number</string>

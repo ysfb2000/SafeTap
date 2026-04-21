@@ -26,6 +26,10 @@
             android:name=".AddContactActivity"
             android:exported="false"
             android:label="Add Emergency Contact" />
+        <activity
+            android:name=".SmsHistoryActivity"
+            android:exported="false"
+            android:label="@string/sms_history" />
 
         <service
             android:name=".DataLayerListenerService"

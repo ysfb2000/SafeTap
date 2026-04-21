@@ -9,4 +9,6 @@ public class Common {
 
     public static final String CONTACTS_KEY = "contacts_list";
 
+    public static final String SMS_HISTORY_KEY = "sms_history_list";
+
 }

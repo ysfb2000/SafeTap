@@ -1,8 +1,6 @@
 package com.example.phone;
 
 import static com.example.shared.constants.Common.CONTACTS_KEY;
-import static com.example.shared.constants.Common.HEART_RATE_ALARM_ENABLED_KEY;
-import static com.example.shared.constants.Common.LAST_HEART_RATE_KEY;
 import static com.example.shared.constants.Common.PREFS_NAME;
 import static com.example.shared.constants.MessageChannels.CONTACTS_DATA_PATH;
 
@@ -12,16 +10,16 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.wear.widget.WearableLinearLayoutManager;
 
 import com.example.phone.databinding.ActivityMainBinding;
@@ -61,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Load and display contacts
         loadAndDisplayContacts();
 
+        // Initialize swipe to delete
+        initSwipeToDelete();
+
         // Initialize the listener
         initListener();
 
@@ -68,10 +69,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         checkSmsPermission();
     }
 
+    private void initSwipeToDelete() {
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                if (position != RecyclerView.NO_POSITION) {
+                    contactList.remove(position);
+                    saveContacts(contactList);
+                    adapter.notifyItemRemoved(position);
+                }
+            }
+        }).attachToRecyclerView(binding.rvContacts);
+    }
+
     // Initialize the listener
     private void initListener() {
         binding.btnHello.setOnClickListener(this);
         binding.btnAddContact.setOnClickListener(this);
+        binding.btnSmsHistory.setOnClickListener(this);
     }
 
     // Check for SMS permission
@@ -108,32 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void loadAndDisplayContacts() {
         contactList = loadContacts();
         adapter = new ContactsAdapter(contactList);
-
-        // Handle long click on a contact
-        adapter.setOnContactLongClickListener(position -> {
-            showDeleteConfirmationDialog(position);
-        });
-        
         binding.rvContacts.setAdapter(adapter);
-    }
-
-    // Show a confirmation dialog before deleting a contact
-    private void showDeleteConfirmationDialog(int position) {
-        Contact contact = contactList.get(position);
-
-        // Show a confirmation dialog before deleting a contact
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.delete_contact_title))
-                .setMessage(getString(R.string.delete_contact_message, contact.getName()))
-                .setPositiveButton(getString(R.string.delete), (dialog, which) -> {
-                    contactList.remove(position);
-                    saveContacts(contactList);
-                    adapter.notifyItemRemoved(position);
-                    // Sync with watch after deletion
-                    sendContactsToWatch();
-                })
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show();
     }
 
     // Load contacts from shared preferences
@@ -200,6 +196,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Handle button clicks
         if (id == R.id.btnAddContact) {
             Intent intent = new Intent(MainActivity.this, AddContactActivity.class);
+            startActivity(intent);
+        }
+
+        if (id == R.id.btnSmsHistory) {
+            Intent intent = new Intent(MainActivity.this, SmsHistoryActivity.class);
             startActivity(intent);
         }
 

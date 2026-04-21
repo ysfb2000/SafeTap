@@ -2,12 +2,12 @@ package com.example.phone;
 
 import static com.example.shared.constants.Common.CONTACTS_KEY;
 import static com.example.shared.constants.Common.PREFS_NAME;
+import static com.example.shared.constants.Common.SMS_HISTORY_KEY;
 import static com.example.shared.constants.MessageChannels.CONTACTS_DATA_PATH;
 import static com.example.shared.constants.MessageChannels.GET_CONTACTS_PATH;
 import static com.example.shared.constants.MessageChannels.SEND_LOCATION_SMS_PATH;
 import static com.example.shared.constants.MessageChannels.SEND_SOS_PATH;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.telephony.SmsManager;
@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.shared.constants.Tag;
 import com.example.shared.models.Contact;
+import com.example.shared.models.SmsHistory;
 import com.google.android.gms.tasks.Tasks;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Node;
@@ -73,6 +74,7 @@ public class DataLayerListenerService extends WearableListenerService {
             try {
                 smsManager.sendTextMessage(contact.getFullPhone(), null, message, null, null);
                 Log.d(Tag.DataLayerListenerService, "Location sent to: " + contact.getFullPhone());
+                saveSmsToHistory(contact.getName(), message);
             } catch (Exception e) {
                 Log.e(Tag.DataLayerListenerService, "Failed to send location to " + contact.getFullPhone(), e);
             }
@@ -81,6 +83,19 @@ public class DataLayerListenerService extends WearableListenerService {
         // Show a toast message
         Toast.makeText(this, getString(R.string.location_sent_all), Toast.LENGTH_SHORT).show();
         Toast.makeText(this, getString(R.string.sms_prefix) + message, Toast.LENGTH_LONG).show();
+    }
+
+    private void saveSmsToHistory(String recipient, String message) {
+        SharedPreferences sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String json = sharedPreferences.getString(SMS_HISTORY_KEY, "[]");
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<SmsHistory>>() {}.getType();
+        List<SmsHistory> historyList = gson.fromJson(json, type);
+        if (historyList == null) {
+            historyList = new ArrayList<>();
+        }
+        historyList.add(new SmsHistory(recipient, message, System.currentTimeMillis()));
+        sharedPreferences.edit().putString(SMS_HISTORY_KEY, gson.toJson(historyList)).apply();
     }
 
     // Send contacts to the watch
@@ -126,6 +141,7 @@ public class DataLayerListenerService extends WearableListenerService {
             try {
                 smsManager.sendTextMessage(contact.getFullPhone(), null, message, null, null);
                 Log.d(Tag.DataLayerListenerService, "SOS sent to: " + contact.getFullPhone());
+                saveSmsToHistory(contact.getName(), message);
             } catch (Exception e) {
                 Log.e(Tag.DataLayerListenerService, "Failed to send SOS to " + contact.getFullPhone(), e);
             }
